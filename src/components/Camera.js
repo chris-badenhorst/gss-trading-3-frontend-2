@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Row,
   Col,
@@ -8,29 +8,25 @@ import {
   OverlayTrigger,
   Popover,
 } from "react-bootstrap";
+import { useDispatch, useSelector } from "react-redux";
+import { addSurveyItem, selectItems } from "../features/FormSlice";
 
-const CameraItem = ({ id, name, description }) => {
+const CameraItem = ({ id, name, description, cameraFormData, setFormData }) => {
   const [showDescription, setShowDescription] = useState(false);
 
-  const handleMouseEnter = () => {
-    setShowDescription(true);
-  };
+  const handleMouseEnter = () => setShowDescription(true);
+  const handleMouseLeave = () => setShowDescription(false);
 
-  const handleMouseLeave = () => {
-    setShowDescription(false);
-  };
-
-  const handleTouchStart = () => {
-    setShowDescription(true);
-  };
-
-  const handleTouchEnd = () => {
-    setShowDescription(false);
+  const handleChange = (field, value) => {
+    setFormData({
+      ...cameraFormData,
+      [`${field}`]: value,
+    });
   };
 
   const popover = (
     <Popover
-      id={`popover-${id}`}
+      id={`Camerapopover-${name}${id}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -43,29 +39,58 @@ const CameraItem = ({ id, name, description }) => {
       <Row>
         <Col className="d-flex align-items-center my-1" md={2}>
           <OverlayTrigger
-            trigger="hover"
+            trigger={["hover", "focus"]}
             placement="right"
             overlay={popover}
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
           >
-            <strong>
-              {id}.{name}:
-            </strong>
+            <strong>{name}:</strong>
           </OverlayTrigger>
         </Col>
 
         <Col className="d-flex align-items-center my-1" md={2}>
-          <Form.Check label="Present" />
+          <Form.Check
+            id={`Camerapresent-${id}`}
+            onChange={(e) =>
+              handleChange(`Camera--${name}--present`, e.target.checked)
+            }
+            label="Present"
+            checked={cameraFormData[`Camera--${name}--present`] || false} //changed this line
+          />
         </Col>
+
         <Col className="d-flex align-items-center my-1" md={2}>
-          <Form.Check label="damaged" />
+          <Form.Check
+            id={`Cameradamaged-${id}`}
+            onChange={(e) =>
+              handleChange(`Camera--${name}--damaged`, e.target.checked)
+            }
+            label="Damaged"
+            checked={cameraFormData[`Camera--${name}--damaged`] || false} //changed this line
+          />
         </Col>
-        <Col className="d-flex align-items-center my-1" md={2}>
-          <Form.Control type="text" placeholder="Type" />
+
+        <Col className="my-1" md={2}>
+          <Form.Control
+            id={`Cameratype-${id}`}
+            type="text"
+            placeholder="Type"
+            onChange={(e) =>
+              handleChange(`Camera--${name}--type`, e.target.value)
+            }
+            value={cameraFormData[`Camera--${name}--type`] || ""} // added this line
+          />
         </Col>
+
         <Col className="my-1" md={4}>
-          <Form.Control as="textarea" placeholder="Findings" />
+          <Form.Control
+            id={`Camerafindings-${id}`}
+            as="textarea"
+            placeholder="Findings"
+            onChange={(e) =>
+              handleChange(`Camera--${name}--findings`, e.target.value)
+            }
+            value={cameraFormData[`Camera--${name}--findings`] || ""} // added this line
+          />
         </Col>
       </Row>
     </ListGroup.Item>
@@ -73,9 +98,30 @@ const CameraItem = ({ id, name, description }) => {
 };
 
 const Camera = () => {
+  const [cameraFormData, setFormData] = useState({});
+  const dispatch = useDispatch();
+  const surveyItems = useSelector(selectItems);
+  useEffect(() => {
+    console.log(surveyItems);
+  }, [surveyItems]);
+
   const makeItem = (id, name, description) => (
-    <CameraItem key={id} id={id} name={name} description={description} />
+    <CameraItem
+      key={`Camera-${name}-${id}`}
+      id={`${id}`}
+      name={name}
+      description={description}
+      cameraFormData={cameraFormData}
+      setFormData={setFormData}
+    />
   );
+
+  const handleSubmit = () => {
+    if (Object.keys(cameraFormData).length !== 0){
+      dispatch(addSurveyItem(cameraFormData));
+      setFormData({});
+    }else{
+      alert("Please fill in atleast one field");}}
 
   const items = [
     {
@@ -126,30 +172,53 @@ const Camera = () => {
     },
   ];
 
+  const handleChange = (field, value, name) => {
+    setFormData({
+      ...cameraFormData,
+      [`${name}_${field}`]: value,
+    });
+  };
+
   return (
     <ListGroup variant="flush">
       <ListGroup.Item>
         <Row>
           <Col xs={4}>
-            <h2>Cameras:</h2>
+            <h2>Camera:</h2>
           </Col>
           <Col xs={4}>
-            <Form.Control type="text" placeholder="Make" />
+            <Form.Control
+              type="text"
+              placeholder="Make"
+              id={`Cameramake`}
+              onChange={(e) => handleChange("make", e.target.value, "Camera")}
+              value={cameraFormData["Camera_make"] || ""} //changed this line
+            />
           </Col>
           <Col xs={4}>
-            <Form.Control type="text" placeholder="Model" />
+            <Form.Control
+              type="text"
+              placeholder="Model"
+              id={`Cameramodel`}
+              onChange={(e) => handleChange("model", e.target.value, "Camera")}
+              value={cameraFormData["Camera_model"] || ""} //changed this line
+            />
           </Col>
         </Row>
       </ListGroup.Item>
+
       {items.map(({ id, name, fix }) => makeItem(id, name, fix))}
+
       <ListGroup.Item>
         <Row>
-          <Col xs={12}>
-            <Form.Control rows="3" as="textarea" placeholder="Comment" />
-            <Button className="my-2" variant="primary">
-              Submit
-            </Button>
-          </Col>
+          <Button
+            type="submit"
+            className="my-2"
+            variant="primary"
+            onClick={handleSubmit}
+          >
+            Submit
+          </Button>
         </Row>
       </ListGroup.Item>
     </ListGroup>
