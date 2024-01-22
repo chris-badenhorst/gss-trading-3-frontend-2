@@ -9,7 +9,12 @@ import {
   Popover,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { addSurveyItem, selectItems } from "../features/FormSlice";
+import {
+  addSurveyItem,
+  selectItems,
+  addOther,
+  selectOther,
+} from "../features/FormSlice";
 
 const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
   const [showDescription, setShowDescription] = useState(false);
@@ -49,7 +54,7 @@ const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`Alarmpresent-${id}`}
+            id={`Alarmpresent-${id}${name}`}
             onChange={(e) =>
               handleChange(`Alarm--${name}--present`, e.target.checked)
             }
@@ -60,7 +65,7 @@ const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`Alarmdamaged-${id}`}
+            id={`Alarmdamaged-${id}${name}`}
             onChange={(e) =>
               handleChange(`Alarm--${name}--damaged`, e.target.checked)
             }
@@ -71,7 +76,7 @@ const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
 
         <Col className="my-1" md={2}>
           <Form.Control
-            id={`Alarmtype-${id}`}
+            id={`Alarmtype-${id}${name}`}
             type="text"
             placeholder="Type"
             onChange={(e) =>
@@ -83,7 +88,7 @@ const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
 
         <Col className="my-1" md={4}>
           <Form.Control
-            id={`Alarmfindings-${id}`}
+            id={`Alarmfindings-${id}${name}`}
             as="textarea"
             placeholder="Findings"
             onChange={(e) =>
@@ -99,12 +104,8 @@ const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
 
 const Alarm = () => {
   const [alarmFormData, setFormData] = useState({});
+  const [other, setOther] = useState([]);
   const dispatch = useDispatch();
-  const surveyItems = useSelector(selectItems);
-  useEffect(() => {
-    console.log(surveyItems);
-  }, [surveyItems]);
-
   const makeItem = (id, name, description) => (
     <AlarmItem
       key={`Alarm-${name}-${id}`}
@@ -117,14 +118,25 @@ const Alarm = () => {
   );
 
   const handleSubmit = () => {
-    if (Object.keys(alarmFormData).length !== 0){
-      dispatch(addSurveyItem( alarmFormData));
+    if (Object.keys(alarmFormData).length !== 0) {
+      dispatch(addSurveyItem(alarmFormData));
       setFormData({});
-    }else{
-      alert("Please fill in atleast one field");
+    } else {
+      alert("Please fill in at least one field");
     }
-};
 
+    if (Array.isArray(other)) {
+      other.forEach((item, index) => {
+        // debugging process
+
+        const info = item.split(" ");
+        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        dispatch(addOther(formattedString));
+      });
+    } else {
+      console.log('"other" is not an Array!');
+    }
+  };
   const items = [
     {
       id: 1,
@@ -176,7 +188,6 @@ const Alarm = () => {
       name: "Communication Module",
       fix: "Verify operational status of the communication module.",
     },
-    // ... (other items)
   ];
 
   const handleChange = (field, value, name) => {
@@ -184,6 +195,14 @@ const Alarm = () => {
       ...alarmFormData,
       [`${name}_${field}`]: value,
     });
+  };
+
+  const handleOther = (value) => {
+    const survey_items = value.includes(",")
+      ? value.split(",").map((item) => item.trim())
+      : [value];
+
+    setOther(survey_items);
   };
 
   return (
@@ -215,6 +234,24 @@ const Alarm = () => {
       </ListGroup.Item>
 
       {items.map(({ id, name, fix }) => makeItem(id, name, fix))}
+      <ListGroup.Item>
+        <Row>
+          <Col className="d-flex align-items-center my-1" md={2}>
+            <strong>Other: </strong>
+          </Col>
+
+          <Col className="d-flex align-items-center my-1" md={10}>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              id={`Alarm-other`}
+              onChange={(e) => {
+                handleOther(e.target.value);
+              }}
+            />
+          </Col>
+        </Row>
+      </ListGroup.Item>
 
       <ListGroup.Item>
         <Row>
@@ -222,7 +259,9 @@ const Alarm = () => {
             type="submit"
             className="my-2"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={(e) => {
+              handleSubmit();
+            }}
           >
             Submit
           </Button>

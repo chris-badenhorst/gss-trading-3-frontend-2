@@ -9,13 +9,18 @@ import {
   Popover,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { addSurveyItem, selectItems } from "../features/FormSlice";
+import {
+  addSurveyItem,
+  selectItems,
+  addOther,
+  selectOther,
+} from "../features/FormSlice";
 
 const GateMotorItem = ({
   id,
   name,
   description,
-  gatemotorFormData,
+  GateMotorFormData,
   setFormData,
 }) => {
   const [showDescription, setShowDescription] = useState(false);
@@ -25,7 +30,7 @@ const GateMotorItem = ({
 
   const handleChange = (field, value) => {
     setFormData({
-      ...gatemotorFormData,
+      ...GateMotorFormData,
       [`${field}`]: value,
     });
   };
@@ -55,47 +60,47 @@ const GateMotorItem = ({
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`GateMotorpresent-${id}`}
+            id={`GateMotorpresent-${id}${name}`}
             onChange={(e) =>
               handleChange(`GateMotor--${name}--present`, e.target.checked)
             }
             label="Present"
-            checked={gatemotorFormData[`GateMotor--${name}--present`] || false} //changed this line
+            checked={GateMotorFormData[`GateMotor--${name}--present`] || false} //changed this line
           />
         </Col>
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`GateMotordamaged-${id}`}
+            id={`GateMotordamaged-${id}${name}`}
             onChange={(e) =>
               handleChange(`GateMotor--${name}--damaged`, e.target.checked)
             }
             label="Damaged"
-            checked={gatemotorFormData[`GateMotor--${name}--damaged`] || false} //changed this line
+            checked={GateMotorFormData[`GateMotor--${name}--damaged`] || false} //changed this line
           />
         </Col>
 
         <Col className="my-1" md={2}>
           <Form.Control
-            id={`GateMotortype-${id}`}
+            id={`GateMotortype-${id}${name}`}
             type="text"
             placeholder="Type"
             onChange={(e) =>
               handleChange(`GateMotor--${name}--type`, e.target.value)
             }
-            value={gatemotorFormData[`GateMotor--${name}--type`] || ""} // added this line
+            value={GateMotorFormData[`GateMotor--${name}--type`] || ""} // added this line
           />
         </Col>
 
         <Col className="my-1" md={4}>
           <Form.Control
-            id={`GateMotorfindings-${id}`}
+            id={`GateMotorfindings-${id}${name}`}
             as="textarea"
             placeholder="Findings"
             onChange={(e) =>
               handleChange(`GateMotor--${name}--findings`, e.target.value)
             }
-            value={gatemotorFormData[`GateMotor--${name}--findings`] || ""} // added this line
+            value={GateMotorFormData[`GateMotor--${name}--findings`] || ""} // added this line
           />
         </Col>
       </Row>
@@ -104,31 +109,44 @@ const GateMotorItem = ({
 };
 
 const GateMotor = () => {
-  const [gatemotorFormData, setFormData] = useState({});
+  const [GateMotorFormData, setFormData] = useState({});
+  const [other, setOther] = useState([]);
   const dispatch = useDispatch();
   const surveyItems = useSelector(selectItems);
-  useEffect(() => {
-    console.log(surveyItems);
-  }, [surveyItems]);
-
+  const otherItems = useSelector(selectOther);
   const makeItem = (id, name, description) => (
     <GateMotorItem
       key={`GateMotor-${name}-${id}`}
       id={`${id}`}
       name={name}
       description={description}
-      gatemotorFormData={gatemotorFormData}
+      GateMotorFormData={GateMotorFormData}
       setFormData={setFormData}
     />
   );
 
   const handleSubmit = () => {
-    if (Object.keys(gatemotorFormData).length !== 0){
-      dispatch(addSurveyItem(gatemotorFormData));
+    if (Object.keys(GateMotorFormData).length !== 0) {
+      dispatch(addSurveyItem(GateMotorFormData));
       setFormData({});
-    }else{
-      alert("Please fill in atleast one field");}}
+    } else {
+      alert("Please fill in at least one field");
+    }
 
+    if (Array.isArray(other)) {
+      other.forEach((item, index) => {
+        // debugging process
+
+        const info = item.split(" ");
+        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        dispatch(addOther(formattedString));
+      });
+    } else {
+      console.log('"other" is not an Array!');
+    }
+
+    console.log(otherItems[0]);
+  };
   const items = [
     {
       id: 1,
@@ -215,14 +233,21 @@ const GateMotor = () => {
       name: "Day night",
       fix: "Ensure the day/night sensor is clean and unobstructed. Adjust sensitivity settings or replace if it's not functioning correctly.",
     },
-    { id: 18, name: "other" },
   ];
 
   const handleChange = (field, value, name) => {
     setFormData({
-      ...gatemotorFormData,
+      ...GateMotorFormData,
       [`${name}_${field}`]: value,
     });
+  };
+
+  const handleOther = (value) => {
+    const survey_items = value.includes(",")
+      ? value.split(",").map((item) => item.trim())
+      : [value];
+
+    setOther(survey_items);
   };
 
   return (
@@ -240,7 +265,7 @@ const GateMotor = () => {
               onChange={(e) =>
                 handleChange("make", e.target.value, "GateMotor")
               }
-              value={gatemotorFormData["GateMotor_make"] || ""} //changed this line
+              value={GateMotorFormData["GateMotor_make"] || ""} //changed this line
             />
           </Col>
           <Col xs={4}>
@@ -251,13 +276,31 @@ const GateMotor = () => {
               onChange={(e) =>
                 handleChange("model", e.target.value, "GateMotor")
               }
-              value={gatemotorFormData["GateMotor_model"] || ""} //changed this line
+              value={GateMotorFormData["GateMotor_model"] || ""} //changed this line
             />
           </Col>
         </Row>
       </ListGroup.Item>
 
       {items.map(({ id, name, fix }) => makeItem(id, name, fix))}
+      <ListGroup.Item>
+        <Row>
+          <Col className="d-flex align-items-center my-1" md={2}>
+            <strong>Other: </strong>
+          </Col>
+
+          <Col className="d-flex align-items-center my-1" md={10}>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              id={`GateMotor-other`}
+              onChange={(e) => {
+                handleOther(e.target.value);
+              }}
+            />
+          </Col>
+        </Row>
+      </ListGroup.Item>
 
       <ListGroup.Item>
         <Row>
@@ -265,7 +308,9 @@ const GateMotor = () => {
             type="submit"
             className="my-2"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={(e) => {
+              handleSubmit();
+            }}
           >
             Submit
           </Button>

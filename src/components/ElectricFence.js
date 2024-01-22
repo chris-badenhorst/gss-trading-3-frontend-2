@@ -9,13 +9,18 @@ import {
   Popover,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { addSurveyItem, selectItems } from "../features/FormSlice";
+import {
+  addSurveyItem,
+  selectItems,
+  addOther,
+  selectOther,
+} from "../features/FormSlice";
 
 const ElectricFenceItem = ({
   id,
   name,
   description,
-  electricfenceFormData,
+  ElectricFenceFormData,
   setFormData,
 }) => {
   const [showDescription, setShowDescription] = useState(false);
@@ -25,7 +30,7 @@ const ElectricFenceItem = ({
 
   const handleChange = (field, value) => {
     setFormData({
-      ...electricfenceFormData,
+      ...ElectricFenceFormData,
       [`${field}`]: value,
     });
   };
@@ -55,52 +60,52 @@ const ElectricFenceItem = ({
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`ElectricFencepresent-${id}`}
+            id={`ElectricFencepresent-${id}${name}`}
             onChange={(e) =>
               handleChange(`ElectricFence--${name}--present`, e.target.checked)
             }
             label="Present"
             checked={
-              electricfenceFormData[`ElectricFence--${name}--present`] || false
+              ElectricFenceFormData[`ElectricFence--${name}--present`] || false
             } //changed this line
           />
         </Col>
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`ElectricFencedamaged-${id}`}
+            id={`ElectricFencedamaged-${id}${name}`}
             onChange={(e) =>
               handleChange(`ElectricFence--${name}--damaged`, e.target.checked)
             }
             label="Damaged"
             checked={
-              electricfenceFormData[`ElectricFence--${name}--damaged`] || false
+              ElectricFenceFormData[`ElectricFence--${name}--damaged`] || false
             } //changed this line
           />
         </Col>
 
         <Col className="my-1" md={2}>
           <Form.Control
-            id={`ElectricFencetype-${id}`}
+            id={`ElectricFencetype-${id}${name}`}
             type="text"
             placeholder="Type"
             onChange={(e) =>
               handleChange(`ElectricFence--${name}--type`, e.target.value)
             }
-            value={electricfenceFormData[`ElectricFence--${name}--type`] || ""} // added this line
+            value={ElectricFenceFormData[`ElectricFence--${name}--type`] || ""} // added this line
           />
         </Col>
 
         <Col className="my-1" md={4}>
           <Form.Control
-            id={`ElectricFencefindings-${id}`}
+            id={`ElectricFencefindings-${id}${name}`}
             as="textarea"
             placeholder="Findings"
             onChange={(e) =>
               handleChange(`ElectricFence--${name}--findings`, e.target.value)
             }
             value={
-              electricfenceFormData[`ElectricFence--${name}--findings`] || ""
+              ElectricFenceFormData[`ElectricFence--${name}--findings`] || ""
             } // added this line
           />
         </Col>
@@ -110,31 +115,44 @@ const ElectricFenceItem = ({
 };
 
 const ElectricFence = () => {
-  const [electricfenceFormData, setFormData] = useState({});
+  const [ElectricFenceFormData, setFormData] = useState({});
+  const [other, setOther] = useState([]);
   const dispatch = useDispatch();
   const surveyItems = useSelector(selectItems);
-  useEffect(() => {
-    console.log(surveyItems);
-  }, [surveyItems]);
-
+  const otherItems = useSelector(selectOther);
   const makeItem = (id, name, description) => (
     <ElectricFenceItem
       key={`ElectricFence-${name}-${id}`}
       id={`${id}`}
       name={name}
       description={description}
-      electricfenceFormData={electricfenceFormData}
+      ElectricFenceFormData={ElectricFenceFormData}
       setFormData={setFormData}
     />
   );
 
   const handleSubmit = () => {
-    if (Object.keys(electricfenceFormData).length !== 0){
-      dispatch(addSurveyItem(electricfenceFormData));
+    if (Object.keys(ElectricFenceFormData).length !== 0) {
+      dispatch(addSurveyItem(ElectricFenceFormData));
       setFormData({});
-    }else{
-      alert("Please fill in atleast one field");}}
+    } else {
+      alert("Please fill in at least one field");
+    }
 
+    if (Array.isArray(other)) {
+      other.forEach((item, index) => {
+        // debugging process
+
+        const info = item.split(" ");
+        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        dispatch(addOther(formattedString));
+      });
+    } else {
+      console.log('"other" is not an Array!');
+    }
+
+    console.log(otherItems[0]);
+  };
   const items = [
     {
       id: 1,
@@ -215,9 +233,17 @@ const ElectricFence = () => {
 
   const handleChange = (field, value, name) => {
     setFormData({
-      ...electricfenceFormData,
+      ...ElectricFenceFormData,
       [`${name}_${field}`]: value,
     });
+  };
+
+  const handleOther = (value) => {
+    const survey_items = value.includes(",")
+      ? value.split(",").map((item) => item.trim())
+      : [value];
+
+    setOther(survey_items);
   };
 
   return (
@@ -235,7 +261,7 @@ const ElectricFence = () => {
               onChange={(e) =>
                 handleChange("make", e.target.value, "ElectricFence")
               }
-              value={electricfenceFormData["ElectricFence_make"] || ""} //changed this line
+              value={ElectricFenceFormData["ElectricFence_make"] || ""} //changed this line
             />
           </Col>
           <Col xs={4}>
@@ -246,13 +272,31 @@ const ElectricFence = () => {
               onChange={(e) =>
                 handleChange("model", e.target.value, "ElectricFence")
               }
-              value={electricfenceFormData["ElectricFence_model"] || ""} //changed this line
+              value={ElectricFenceFormData["ElectricFence_model"] || ""} //changed this line
             />
           </Col>
         </Row>
       </ListGroup.Item>
 
       {items.map(({ id, name, fix }) => makeItem(id, name, fix))}
+      <ListGroup.Item>
+        <Row>
+          <Col className="d-flex align-items-center my-1" md={2}>
+            <strong>Other: </strong>
+          </Col>
+
+          <Col className="d-flex align-items-center my-1" md={10}>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              id={`ElectricFence-other`}
+              onChange={(e) => {
+                handleOther(e.target.value);
+              }}
+            />
+          </Col>
+        </Row>
+      </ListGroup.Item>
 
       <ListGroup.Item>
         <Row>
@@ -260,7 +304,9 @@ const ElectricFence = () => {
             type="submit"
             className="my-2"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={(e) => {
+              handleSubmit();
+            }}
           >
             Submit
           </Button>

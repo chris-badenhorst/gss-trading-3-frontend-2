@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import { Form, Button, Row, Col } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -14,18 +14,20 @@ import {
   addSurvey,
   reset,
   previousForm,
+  selectOther,
+  selectSurveyNumber,
 } from "../features/FormSlice";
 
 const FormComment = () => {
-  
   const assessmentDate = useSelector(selectAssessmentDate);
   const responsibleEmployee = useSelector(selectResponsibleEmployee);
+  const surveyNumber = useSelector(selectSurveyNumber);
   const presentOnSite = useSelector(selectPresentOnSite);
   const premisesOccupiedOrVacant = useSelector(selectPremisesOccupiedOrVacant);
   const surveyItems = useSelector(selectItems);
   const comment = useSelector(selectComment);
   const model = useSelector(selectModel);
-  const make = useSelector(selectMake);
+  const other = useSelector(selectOther);
   const [surveyComment, setSurveyComment] = useState(comment);
   const dispatch = useDispatch();
   const handleInputChange = (field, value) => {
@@ -33,16 +35,26 @@ const FormComment = () => {
   };
 
   const handleSubmit = () => {
-    if (surveyComment === ""){
+    if (surveyComment === "") {
       alert("Please enter a comment");
-    }else{
-      dispatch(addSurvey({assessmentDate, responsibleEmployee, presentOnSite, premisesOccupiedOrVacant,surveyItems,comment }))
-      dispatch(reset())
+    } else {
+      dispatch(
+        addSurvey({
+          assessmentDate,
+          responsibleEmployee,
+          surveyNumber,
+          presentOnSite,
+          premisesOccupiedOrVacant,
+          surveyItems,
+          other,
+          comment,
+        })
+      );
+      dispatch(reset());
     }
-    
   };
   const handlePrevious = () => {
-    dispatch(previousForm())
+    dispatch(previousForm());
   };
 
   return (
@@ -53,7 +65,6 @@ const FormComment = () => {
         rows="3"
         value={surveyComment}
         onChange={(e) => {
-          
           handleInputChange("comment", e.target.value);
           setSurveyComment(e.target.value);
         }}

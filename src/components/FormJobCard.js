@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Col, Row, Form, Button } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -7,15 +7,20 @@ import {
   selectResponsibleEmployee,
   selectPremisesOccupiedOrVacant,
   selectPresentOnSite,
+  selectSurveyNumber,
 } from "../features/FormSlice";
 
 const FormJobCard = () => {
+  const survey_Number = useSelector(selectSurveyNumber);
   const responsibleEmployee = useSelector(selectResponsibleEmployee);
   const presentOnSite = useSelector(selectPresentOnSite);
   const premisesOccupiedOrVacant = useSelector(selectPremisesOccupiedOrVacant);
-  const [surveyResponsibleEmployee, setSurveyResponsibleEmployee] = useState(responsibleEmployee);
+  const [surveyResponsibleEmployee, setSurveyResponsibleEmployee] =
+    useState(responsibleEmployee);
   const [surveyPresentOnSite, setSurveyPresentOnSite] = useState(presentOnSite);
-  const [surveyPremisesOccupiedOrVacant, setSurveypremisesOccupiedOrVacant] = useState(premisesOccupiedOrVacant);
+  const [surveyNumber, setSurveyNumber] = useState(survey_Number);
+  const [surveyPremisesOccupiedOrVacant, setSurveypremisesOccupiedOrVacant] =
+    useState(premisesOccupiedOrVacant);
   const dispatch = useDispatch();
 
   const handleInputChange = (field, value) => {
@@ -35,33 +40,42 @@ const FormJobCard = () => {
     setSurveyPresentOnSite(newPresentOnSite);
   };
   let today = new Date();
-  let dd = String(today.getDate()).padStart(2, '0');
-  let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+  let dd = String(today.getDate()).padStart(2, "0");
+  let mm = String(today.getMonth() + 1).padStart(2, "0"); // January is 0!
   let yyyy = today.getFullYear();
-  dispatch(updateFormData({"assessmentDate": {today}}))
 
-  today = dd + '/' + mm + '/' + yyyy;
+  // Create the object with the correct structure
+  useEffect(() => {
+    const assessmentDate = {
+      today: `${yyyy}-${mm}-${dd}`, // Format as YYYY-MM-DD
+    };
 
+    // Dispatch the action with the created object
+    dispatch(updateFormData({ assessmentDate }));
+  }, []);
+
+  today = dd + "/" + mm + "/" + yyyy;
 
   const handleNext = () => {
-    const emptyItems = []
+    const emptyItems = [];
     if (responsibleEmployee === "") {
-      emptyItems.push("responsibleEmployee")
+      emptyItems.push("responsible Employee");
     }
     if (presentOnSite.length === 0) {
-      emptyItems.push("presentOnSite")
+      emptyItems.push("present On Site");
     }
     if (premisesOccupiedOrVacant === "") {
-      emptyItems.push("premisesOccupiedOrVacant")
+      emptyItems.push("premises Occupied Or Vacant");
+    }
+    if (surveyNumber === "") {
+      emptyItems.push("survey number");
     }
     if (emptyItems.length !== 0) {
-      alert("Please fill out the following: " + emptyItems.join(", "))
+      alert("Please fill out the following: " + emptyItems.join(", "));
     } else {
       dispatch(nextForm());
     }
-  }
-
-
+  };
 
   return (
     <div>
@@ -71,17 +85,13 @@ const FormJobCard = () => {
         </Col>
       </Row>
       <Row className="mb-5">
-        <Col xs={6}>
+        <Col md={4}>
           <Form.Group as={Col} controlId="assessmentDate">
             <Form.Label>Assessment Date:</Form.Label>
-            <Form.Control
-              type="text"
-              disabled
-              placeholder={today}
-            />
+            <Form.Control type="text" disabled placeholder={today} />
           </Form.Group>
         </Col>
-        <Col xs={6}>
+        <Col md={4}>
           <Form.Group as={Col} controlId="responsibleEmployee">
             <Form.Label>Responsible Employee:</Form.Label>
             <Form.Control
@@ -92,12 +102,28 @@ const FormJobCard = () => {
               }}
               as="select"
             >
-              <option value="" disabled selected>Select</option>
+              <option value="" disabled>
+                Select
+              </option>
               <option value="Jaco">Jaco</option>
               <option value="Louise">Louise</option>
               <option value="Noel">Noel</option>
               <option value="Amos">Amos</option>
             </Form.Control>
+          </Form.Group>
+        </Col>
+        <Col md={4}>
+          <Form.Group as={Col} controlId="surveyNumber">
+            <Form.Label>Survey Number:</Form.Label>
+            <Form.Control
+              value={surveyNumber}
+              onChange={(e) => {
+                handleInputChange("surveyNumber", e.target.value);
+                setSurveyNumber(e.target.value);
+              }}
+              type="text"
+              placeholder="Enter survey number"
+            />
           </Form.Group>
         </Col>
       </Row>
@@ -148,7 +174,9 @@ const FormJobCard = () => {
               }}
               as="select"
             >
-              <option value="" selected disabled>select</option>
+              <option value="" disabled>
+                select
+              </option>
               <option value="occupied">occupied</option>
               <option value="vacant">vacant</option>
             </Form.Control>

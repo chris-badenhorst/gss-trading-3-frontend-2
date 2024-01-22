@@ -9,13 +9,18 @@ import {
   Popover,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { addSurveyItem, selectItems } from "../features/FormSlice";
+import {
+  addSurveyItem,
+  selectItems,
+  addOther,
+  selectOther,
+} from "../features/FormSlice";
 
 const BoreHoleItem = ({
   id,
   name,
   description,
-  boreholeFormData,
+  BoreHoleFormData,
   setFormData,
 }) => {
   const [showDescription, setShowDescription] = useState(false);
@@ -25,7 +30,7 @@ const BoreHoleItem = ({
 
   const handleChange = (field, value) => {
     setFormData({
-      ...boreholeFormData,
+      ...BoreHoleFormData,
       [`${field}`]: value,
     });
   };
@@ -55,47 +60,47 @@ const BoreHoleItem = ({
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`BoreHolepresent-${id}`}
+            id={`BoreHolepresent-${id}${name}`}
             onChange={(e) =>
               handleChange(`BoreHole--${name}--present`, e.target.checked)
             }
             label="Present"
-            checked={boreholeFormData[`BoreHole--${name}--present`] || false} //changed this line
+            checked={BoreHoleFormData[`BoreHole--${name}--present`] || false} //changed this line
           />
         </Col>
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`BoreHoledamaged-${id}`}
+            id={`BoreHoledamaged-${id}${name}`}
             onChange={(e) =>
               handleChange(`BoreHole--${name}--damaged`, e.target.checked)
             }
             label="Damaged"
-            checked={boreholeFormData[`BoreHole--${name}--damaged`] || false} //changed this line
+            checked={BoreHoleFormData[`BoreHole--${name}--damaged`] || false} //changed this line
           />
         </Col>
 
         <Col className="my-1" md={2}>
           <Form.Control
-            id={`BoreHoletype-${id}`}
+            id={`BoreHoletype-${id}${name}`}
             type="text"
             placeholder="Type"
             onChange={(e) =>
               handleChange(`BoreHole--${name}--type`, e.target.value)
             }
-            value={boreholeFormData[`BoreHole--${name}--type`] || ""} // added this line
+            value={BoreHoleFormData[`BoreHole--${name}--type`] || ""} // added this line
           />
         </Col>
 
         <Col className="my-1" md={4}>
           <Form.Control
-            id={`BoreHolefindings-${id}`}
+            id={`BoreHolefindings-${id}${name}`}
             as="textarea"
             placeholder="Findings"
             onChange={(e) =>
               handleChange(`BoreHole--${name}--findings`, e.target.value)
             }
-            value={boreholeFormData[`BoreHole--${name}--findings`] || ""} // added this line
+            value={BoreHoleFormData[`BoreHole--${name}--findings`] || ""} // added this line
           />
         </Col>
       </Row>
@@ -104,32 +109,44 @@ const BoreHoleItem = ({
 };
 
 const BoreHole = () => {
-  const [boreholeFormData, setFormData] = useState({});
+  const [BoreHoleFormData, setFormData] = useState({});
+  const [other, setOther] = useState([]);
   const dispatch = useDispatch();
   const surveyItems = useSelector(selectItems);
-  useEffect(() => {
-    console.log(surveyItems);
-  }, [surveyItems]);
-
+  const otherItems = useSelector(selectOther);
   const makeItem = (id, name, description) => (
     <BoreHoleItem
       key={`BoreHole-${name}-${id}`}
       id={`${id}`}
       name={name}
       description={description}
-      boreholeFormData={boreholeFormData}
+      BoreHoleFormData={BoreHoleFormData}
       setFormData={setFormData}
     />
   );
 
   const handleSubmit = () => {
-    if (Object.keys(boreholeFormData).length !== 0){
-      dispatch(addSurveyItem(boreholeFormData));
+    if (Object.keys(BoreHoleFormData).length !== 0) {
+      dispatch(addSurveyItem(BoreHoleFormData));
       setFormData({});
-    }else{
-      alert("Please fill in atleast one field");}}
-   
+    } else {
+      alert("Please fill in at least one field");
+    }
 
+    if (Array.isArray(other)) {
+      other.forEach((item, index) => {
+        // debugging process
+
+        const info = item.split(" ");
+        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        dispatch(addOther(formattedString));
+      });
+    } else {
+      console.log('"other" is not an Array!');
+    }
+
+    console.log(otherItems[0]);
+  };
   const items = [
     {
       id: 1,
@@ -173,12 +190,19 @@ const BoreHole = () => {
       fix: "Inspect the submersible  motor for mechanical issues and check for blockages in the pump or borehole.",
     },
   ];
-
   const handleChange = (field, value, name) => {
     setFormData({
-      ...boreholeFormData,
+      ...BoreHoleFormData,
       [`${name}_${field}`]: value,
     });
+  };
+
+  const handleOther = (value) => {
+    const survey_items = value.includes(",")
+      ? value.split(",").map((item) => item.trim())
+      : [value];
+
+    setOther(survey_items);
   };
 
   return (
@@ -194,7 +218,7 @@ const BoreHole = () => {
               placeholder="Make"
               id={`BoreHolemake`}
               onChange={(e) => handleChange("make", e.target.value, "BoreHole")}
-              value={boreholeFormData["BoreHole_make"] || ""} //changed this line
+              value={BoreHoleFormData["BoreHole_make"] || ""} //changed this line
             />
           </Col>
           <Col xs={4}>
@@ -205,13 +229,31 @@ const BoreHole = () => {
               onChange={(e) =>
                 handleChange("model", e.target.value, "BoreHole")
               }
-              value={boreholeFormData["BoreHole_model"] || ""} //changed this line
+              value={BoreHoleFormData["BoreHole_model"] || ""} //changed this line
             />
           </Col>
         </Row>
       </ListGroup.Item>
 
       {items.map(({ id, name, fix }) => makeItem(id, name, fix))}
+      <ListGroup.Item>
+        <Row>
+          <Col className="d-flex align-items-center my-1" md={2}>
+            <strong>Other: </strong>
+          </Col>
+
+          <Col className="d-flex align-items-center my-1" md={10}>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              id={`BoreHole-other`}
+              onChange={(e) => {
+                handleOther(e.target.value);
+              }}
+            />
+          </Col>
+        </Row>
+      </ListGroup.Item>
 
       <ListGroup.Item>
         <Row>
@@ -219,7 +261,9 @@ const BoreHole = () => {
             type="submit"
             className="my-2"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={(e) => {
+              handleSubmit();
+            }}
           >
             Submit
           </Button>

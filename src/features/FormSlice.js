@@ -6,6 +6,7 @@ const initialState = {
   form: 1,
   assessmentDate: "",
   responsibleEmployee: "",
+  surveyNumber: "",
   presentOnSite: [],
   premisesOccupiedOrVacant: "",
   surveyItems: [],
@@ -15,7 +16,7 @@ const initialState = {
   loading: false,
   response: null,
   error: null,
- 
+  other: [],
 };
 
 export const addSurvey = createAsyncThunk("addSurvey", async (formData) => {
@@ -61,6 +62,10 @@ export const formSlice = createSlice({
     reset: (state) => {
       Object.assign(state, initialState);
     },
+    addOther: (state, action) => {
+      const value = action.payload;
+      state.other.push(value);
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -94,6 +99,8 @@ export const selectLoading = (state) => state.form.loading;
 export const selectObjects = (state) => state.form.objects;
 export const selectError = (state) => state.form.error;
 export const selectResponse = (state) => state.form.response;
+export const selectOther = (state) => state.form.other;
+export const selectSurveyNumber = (state) => state.form.surveyNumber;
 export const {
   nextForm,
   previousForm,
@@ -101,6 +108,7 @@ export const {
   addPresentOnSite,
   addSurveyItem,
   reset,
+  addOther,
 } = formSlice.actions;
 
 export default formSlice.reducer;

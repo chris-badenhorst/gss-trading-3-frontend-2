@@ -9,13 +9,18 @@ import {
   Popover,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { addSurveyItem, selectItems } from "../features/FormSlice";
+import {
+  addSurveyItem,
+  selectItems,
+  addOther,
+  selectOther,
+} from "../features/FormSlice";
 
 const SwimmingPoolPumpItem = ({
   id,
   name,
   description,
-  swimmingpoolpumpFormData,
+  SwimmingPoolPumpFormData,
   setFormData,
 }) => {
   const [showDescription, setShowDescription] = useState(false);
@@ -25,7 +30,7 @@ const SwimmingPoolPumpItem = ({
 
   const handleChange = (field, value) => {
     setFormData({
-      ...swimmingpoolpumpFormData,
+      ...SwimmingPoolPumpFormData,
       [`${field}`]: value,
     });
   };
@@ -55,13 +60,16 @@ const SwimmingPoolPumpItem = ({
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`SwimmingPoolPumppresent-${id}`}
+            id={`SwimmingPoolPumppresent-${id}${name}`}
             onChange={(e) =>
-              handleChange(`SwimmingPoolPump--${name}--present`, e.target.checked)
+              handleChange(
+                `SwimmingPoolPump--${name}--present`,
+                e.target.checked
+              )
             }
             label="Present"
             checked={
-              swimmingpoolpumpFormData[`SwimmingPoolPump--${name}--present`] ||
+              SwimmingPoolPumpFormData[`SwimmingPoolPump--${name}--present`] ||
               false
             } //changed this line
           />
@@ -69,13 +77,16 @@ const SwimmingPoolPumpItem = ({
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`SwimmingPoolPumpdamaged-${id}`}
+            id={`SwimmingPoolPumpdamaged-${id}${name}`}
             onChange={(e) =>
-              handleChange(`SwimmingPoolPump--${name}--damaged`, e.target.checked)
+              handleChange(
+                `SwimmingPoolPump--${name}--damaged`,
+                e.target.checked
+              )
             }
             label="Damaged"
             checked={
-              swimmingpoolpumpFormData[`SwimmingPoolPump--${name}--damaged`] ||
+              SwimmingPoolPumpFormData[`SwimmingPoolPump--${name}--damaged`] ||
               false
             } //changed this line
           />
@@ -83,21 +94,21 @@ const SwimmingPoolPumpItem = ({
 
         <Col className="my-1" md={2}>
           <Form.Control
-            id={`SwimmingPoolPumptype-${id}`}
+            id={`SwimmingPoolPumptype-${id}${name}`}
             type="text"
             placeholder="Type"
             onChange={(e) =>
               handleChange(`SwimmingPoolPump--${name}--type`, e.target.value)
             }
             value={
-              swimmingpoolpumpFormData[`SwimmingPoolPump--${name}--type`] || ""
+              SwimmingPoolPumpFormData[`SwimmingPoolPump--${name}--type`] || ""
             } // added this line
           />
         </Col>
 
         <Col className="my-1" md={4}>
           <Form.Control
-            id={`SwimmingPoolPumpfindings-${id}`}
+            id={`SwimmingPoolPumpfindings-${id}${name}`}
             as="textarea"
             placeholder="Findings"
             onChange={(e) =>
@@ -107,7 +118,7 @@ const SwimmingPoolPumpItem = ({
               )
             }
             value={
-              swimmingpoolpumpFormData[`SwimmingPoolPump--${name}--findings`] ||
+              SwimmingPoolPumpFormData[`SwimmingPoolPump--${name}--findings`] ||
               ""
             } // added this line
           />
@@ -118,105 +129,110 @@ const SwimmingPoolPumpItem = ({
 };
 
 const SwimmingPoolPump = () => {
-  const [swimmingpoolpumpFormData, setFormData] = useState({});
+  const [SwimmingPoolPumpFormData, setFormData] = useState({});
+  const [other, setOther] = useState([]);
   const dispatch = useDispatch();
   const surveyItems = useSelector(selectItems);
-  useEffect(() => {
-    console.log(surveyItems);
-  }, [surveyItems]);
-
+  const otherItems = useSelector(selectOther);
   const makeItem = (id, name, description) => (
     <SwimmingPoolPumpItem
       key={`SwimmingPoolPump-${name}-${id}`}
       id={`${id}`}
       name={name}
       description={description}
-      swimmingpoolpumpFormData={swimmingpoolpumpFormData}
+      SwimmingPoolPumpFormData={SwimmingPoolPumpFormData}
       setFormData={setFormData}
     />
   );
 
   const handleSubmit = () => {
-    if (Object.keys(swimmingpoolpumpFormData).length !== 0){
-      dispatch(addSurveyItem(swimmingpoolpumpFormData));
+    if (Object.keys(SwimmingPoolPumpFormData).length !== 0) {
+      dispatch(addSurveyItem(SwimmingPoolPumpFormData));
       setFormData({});
-    }else{
-      alert("Please fill in atleast one field");}}
+    } else {
+      alert("Please fill in at least one field");
+    }
 
+    if (Array.isArray(other)) {
+      other.forEach((item, index) => {
+        // debugging process
+
+        const info = item.split(" ");
+        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        dispatch(addOther(formattedString));
+      });
+    } else {
+      console.log('"other" is not an Array!');
+    }
+
+    console.log(otherItems[0]);
+  };
   const items = [
     {
       id: 1,
-      name: "Visual Inspection",
-      fix: "Examine the pump for any visible signs of damage, loose connections, or debris.Check for leaks around the pump and plumbing connections.",
+      name: "Power Supply",
+      fix: "Check power supply and ensure proper functioning.",
     },
     {
       id: 2,
-      name: "Prime ",
-      fix: "Ensure the pump is properly primed with water.Fill the pump basket with water to ensure the pump is not running dry.",
+      name: "Battery",
+      fix: "Test and replace the backup battery if needed.",
     },
     {
       id: 3,
-      name: "Strainer Basket",
-      fix: "Inspect the strainer basket for debris and clean it if necessary.Make sure the basket is properly seated in its housing.",
+      name: "Panel",
+      fix: "Examine the main control panel for issues and verify secure connections.",
     },
     {
       id: 4,
-      name: "Impeller",
-      fix: " Remove the pump cover and inspect the impeller for any clogs or obstructions. Rotate the impeller manually to check for any resistance.",
+      name: "Keypad",
+      fix: "Test keypad functionality and check connections.",
     },
     {
       id: 5,
-      name: "Pool Skimmer and Drain",
-      fix: "Check the skimmer and main drain for any blockages.Remove any debris that might be restricting water flow",
+      name: "PIR (Indoor/Outdoor)",
+      fix: "Test PIR motion sensors and ensure proper positioning.",
     },
-
     {
       id: 6,
-      name: "Motor Capacitor",
-      fix: "Inspect the receiver unit to confirm that it is receiving signals from sensors. Ensure antennas are intact and properly positioned.",
+      name: "Receiver",
+      fix: "Inspect the receiver unit for signal reception and antenna integrity.",
     },
     {
       id: 7,
-      name: "Wiring and Connections",
-      fix: "Check the electrical connections for any signs of corrosion or loose wires.Ensure all wiring is properly connected and secured.",
+      name: "Expander",
+      fix: "Inspect and test additional modules connected to the system.",
     },
     {
       id: 8,
-      name: "Power Supply",
-      fix: "Verify that there is power reaching the pump.Test the power supply with a multimeter.",
+      name: "Wiring",
+      fix: "Examine system wiring for damage, loose connections, or shorts.",
     },
     {
       id: 9,
-      name: "DB Board",
-      fix: "Inspect the DB board for any tripped breakers or blown fuses.Reset any tripped breakers and replace blown fuses.",
+      name: "Zones/Devices",
+      fix: "Check individual zones and devices for proper configuration.",
     },
     {
       id: 10,
-      name: "GFCI",
-      fix: "If the pump is connected to a GFCI outlet, ensure it hasn't tripped.Reset the GFCI if necessary.",
-    },
-    {
-      id: 10,
-      name: "Pressure Gauge",
-      fix: "Check the pressure gauge on the filter system for abnormal readings.High pressure may indicate a clogged filter.",
-    },
-    {
-      id: 10,
-      name: "Check Valve",
-      fix: "Check the check valve for proper operation.Replace the check valve if it's stuck or not functioning.",
-    },
-    {
-      id: 10,
-      name: "Motor Bearings",
-      fix: "If the motor is making unusual noises, inspect the motor bearings for wear.Lubricate or replace the bearings as needed.",
+      name: "Communication Module",
+      fix: "Verify operational status of the communication module.",
     },
   ];
 
   const handleChange = (field, value, name) => {
     setFormData({
-      ...swimmingpoolpumpFormData,
+      ...SwimmingPoolPumpFormData,
       [`${name}_${field}`]: value,
     });
+  };
+
+  const handleOther = (value) => {
+    const survey_items = value.includes(",")
+      ? value.split(",").map((item) => item.trim())
+      : [value];
+
+    setOther(survey_items);
   };
 
   return (
@@ -234,7 +250,7 @@ const SwimmingPoolPump = () => {
               onChange={(e) =>
                 handleChange("make", e.target.value, "SwimmingPoolPump")
               }
-              value={swimmingpoolpumpFormData["SwimmingPoolPump_make"] || ""} //changed this line
+              value={SwimmingPoolPumpFormData["SwimmingPoolPump_make"] || ""} //changed this line
             />
           </Col>
           <Col xs={4}>
@@ -245,13 +261,31 @@ const SwimmingPoolPump = () => {
               onChange={(e) =>
                 handleChange("model", e.target.value, "SwimmingPoolPump")
               }
-              value={swimmingpoolpumpFormData["SwimmingPoolPump_model"] || ""} //changed this line
+              value={SwimmingPoolPumpFormData["SwimmingPoolPump_model"] || ""} //changed this line
             />
           </Col>
         </Row>
       </ListGroup.Item>
 
       {items.map(({ id, name, fix }) => makeItem(id, name, fix))}
+      <ListGroup.Item>
+        <Row>
+          <Col className="d-flex align-items-center my-1" md={2}>
+            <strong>Other: </strong>
+          </Col>
+
+          <Col className="d-flex align-items-center my-1" md={10}>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              id={`SwimmingPoolPump-other`}
+              onChange={(e) => {
+                handleOther(e.target.value);
+              }}
+            />
+          </Col>
+        </Row>
+      </ListGroup.Item>
 
       <ListGroup.Item>
         <Row>
@@ -259,7 +293,9 @@ const SwimmingPoolPump = () => {
             type="submit"
             className="my-2"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={(e) => {
+              handleSubmit();
+            }}
           >
             Submit
           </Button>

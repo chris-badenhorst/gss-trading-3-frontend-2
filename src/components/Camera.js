@@ -9,9 +9,14 @@ import {
   Popover,
 } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
-import { addSurveyItem, selectItems } from "../features/FormSlice";
+import {
+  addSurveyItem,
+  selectItems,
+  addOther,
+  selectOther,
+} from "../features/FormSlice";
 
-const CameraItem = ({ id, name, description, cameraFormData, setFormData }) => {
+const CameraItem = ({ id, name, description, CameraFormData, setFormData }) => {
   const [showDescription, setShowDescription] = useState(false);
 
   const handleMouseEnter = () => setShowDescription(true);
@@ -19,7 +24,7 @@ const CameraItem = ({ id, name, description, cameraFormData, setFormData }) => {
 
   const handleChange = (field, value) => {
     setFormData({
-      ...cameraFormData,
+      ...CameraFormData,
       [`${field}`]: value,
     });
   };
@@ -49,47 +54,47 @@ const CameraItem = ({ id, name, description, cameraFormData, setFormData }) => {
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`Camerapresent-${id}`}
+            id={`Camerapresent-${id}${name}`}
             onChange={(e) =>
               handleChange(`Camera--${name}--present`, e.target.checked)
             }
             label="Present"
-            checked={cameraFormData[`Camera--${name}--present`] || false} //changed this line
+            checked={CameraFormData[`Camera--${name}--present`] || false} //changed this line
           />
         </Col>
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`Cameradamaged-${id}`}
+            id={`Cameradamaged-${id}${name}`}
             onChange={(e) =>
               handleChange(`Camera--${name}--damaged`, e.target.checked)
             }
             label="Damaged"
-            checked={cameraFormData[`Camera--${name}--damaged`] || false} //changed this line
+            checked={CameraFormData[`Camera--${name}--damaged`] || false} //changed this line
           />
         </Col>
 
         <Col className="my-1" md={2}>
           <Form.Control
-            id={`Cameratype-${id}`}
+            id={`Cameratype-${id}${name}`}
             type="text"
             placeholder="Type"
             onChange={(e) =>
               handleChange(`Camera--${name}--type`, e.target.value)
             }
-            value={cameraFormData[`Camera--${name}--type`] || ""} // added this line
+            value={CameraFormData[`Camera--${name}--type`] || ""} // added this line
           />
         </Col>
 
         <Col className="my-1" md={4}>
           <Form.Control
-            id={`Camerafindings-${id}`}
+            id={`Camerafindings-${id}${name}`}
             as="textarea"
             placeholder="Findings"
             onChange={(e) =>
               handleChange(`Camera--${name}--findings`, e.target.value)
             }
-            value={cameraFormData[`Camera--${name}--findings`] || ""} // added this line
+            value={CameraFormData[`Camera--${name}--findings`] || ""} // added this line
           />
         </Col>
       </Row>
@@ -98,31 +103,44 @@ const CameraItem = ({ id, name, description, cameraFormData, setFormData }) => {
 };
 
 const Camera = () => {
-  const [cameraFormData, setFormData] = useState({});
+  const [CameraFormData, setFormData] = useState({});
+  const [other, setOther] = useState([]);
   const dispatch = useDispatch();
   const surveyItems = useSelector(selectItems);
-  useEffect(() => {
-    console.log(surveyItems);
-  }, [surveyItems]);
-
+  const otherItems = useSelector(selectOther);
   const makeItem = (id, name, description) => (
     <CameraItem
       key={`Camera-${name}-${id}`}
       id={`${id}`}
       name={name}
       description={description}
-      cameraFormData={cameraFormData}
+      CameraFormData={CameraFormData}
       setFormData={setFormData}
     />
   );
 
   const handleSubmit = () => {
-    if (Object.keys(cameraFormData).length !== 0){
-      dispatch(addSurveyItem(cameraFormData));
+    if (Object.keys(CameraFormData).length !== 0) {
+      dispatch(addSurveyItem(CameraFormData));
       setFormData({});
-    }else{
-      alert("Please fill in atleast one field");}}
+    } else {
+      alert("Please fill in at least one field");
+    }
 
+    if (Array.isArray(other)) {
+      other.forEach((item, index) => {
+        // debugging process
+
+        const info = item.split(" ");
+        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        dispatch(addOther(formattedString));
+      });
+    } else {
+      console.log('"other" is not an Array!');
+    }
+
+    console.log(otherItems[0]);
+  };
   const items = [
     {
       id: 1,
@@ -174,9 +192,17 @@ const Camera = () => {
 
   const handleChange = (field, value, name) => {
     setFormData({
-      ...cameraFormData,
+      ...CameraFormData,
       [`${name}_${field}`]: value,
     });
+  };
+
+  const handleOther = (value) => {
+    const survey_items = value.includes(",")
+      ? value.split(",").map((item) => item.trim())
+      : [value];
+
+    setOther(survey_items);
   };
 
   return (
@@ -192,7 +218,7 @@ const Camera = () => {
               placeholder="Make"
               id={`Cameramake`}
               onChange={(e) => handleChange("make", e.target.value, "Camera")}
-              value={cameraFormData["Camera_make"] || ""} //changed this line
+              value={CameraFormData["Camera_make"] || ""} //changed this line
             />
           </Col>
           <Col xs={4}>
@@ -201,13 +227,31 @@ const Camera = () => {
               placeholder="Model"
               id={`Cameramodel`}
               onChange={(e) => handleChange("model", e.target.value, "Camera")}
-              value={cameraFormData["Camera_model"] || ""} //changed this line
+              value={CameraFormData["Camera_model"] || ""} //changed this line
             />
           </Col>
         </Row>
       </ListGroup.Item>
 
       {items.map(({ id, name, fix }) => makeItem(id, name, fix))}
+      <ListGroup.Item>
+        <Row>
+          <Col className="d-flex align-items-center my-1" md={2}>
+            <strong>Other: </strong>
+          </Col>
+
+          <Col className="d-flex align-items-center my-1" md={10}>
+            <Form.Control
+              as="textarea"
+              rows={5}
+              id={`Camera-other`}
+              onChange={(e) => {
+                handleOther(e.target.value);
+              }}
+            />
+          </Col>
+        </Row>
+      </ListGroup.Item>
 
       <ListGroup.Item>
         <Row>
@@ -215,7 +259,9 @@ const Camera = () => {
             type="submit"
             className="my-2"
             variant="primary"
-            onClick={handleSubmit}
+            onClick={(e) => {
+              handleSubmit();
+            }}
           >
             Submit
           </Button>
