@@ -37,6 +37,14 @@ export const getSurveys = createAsyncThunk("getSurveys", async () => {
   }
 });
 
+export const deleteSurvey = createAsyncThunk("deleteSurveys", async (id) => {
+  try {
+    const response = await axios.delete(`http://127.0.0.1:8000/delete/${id}/`);
+  } catch (error) {
+    throw error;
+  }
+});
+
 export const formSlice = createSlice({
   name: "form",
   initialState: initialState,
@@ -101,6 +109,7 @@ export const selectError = (state) => state.form.error;
 export const selectResponse = (state) => state.form.response;
 export const selectOther = (state) => state.form.other;
 export const selectSurveyNumber = (state) => state.form.surveyNumber;
+export const selectDeleteSurvey = (state) => state.form.deleteSurvey;
 export const {
   nextForm,
   previousForm,

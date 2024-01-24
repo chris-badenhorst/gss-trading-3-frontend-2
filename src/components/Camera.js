@@ -127,19 +127,29 @@ const Camera = () => {
       alert("Please fill in at least one field");
     }
 
-    if (Array.isArray(other)) {
+    if (other.length !== 0 && Array.isArray(other) && other[0].includes(".")) {
       other.forEach((item, index) => {
-        // debugging process
-
         const info = item.split(" ");
         const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
         dispatch(addOther(formattedString));
       });
     } else {
-      console.log('"other" is not an Array!');
+      if (other.includes(".")) {
+        const info = other.split(" ");
+        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        dispatch(addOther(formattedString));
+      } else {
+        if (other.length !== 0) {
+          dispatch(addOther(other));
+        } else {
+          if (Array.isArray(other) && other.length !== 0) {
+            dispatch(addOther(other));
+          } else {
+            console.log('"other" is not an Array!');
+          }
+        }
+      }
     }
-
-    console.log(otherItems[0]);
   };
   const items = [
     {
@@ -198,11 +208,13 @@ const Camera = () => {
   };
 
   const handleOther = (value) => {
-    const survey_items = value.includes(",")
-      ? value.split(",").map((item) => item.trim())
-      : [value];
+    if (value !== "") {
+      const survey_items = value.includes(",")
+        ? value.split(",").map((item) => item.trim())
+        : value;
 
-    setOther(survey_items);
+      setOther(survey_items);
+    }
   };
 
   return (

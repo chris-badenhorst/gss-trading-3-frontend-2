@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Col, Row, Form, Button } from "react-bootstrap";
+import { Col, Row, Form, Button, Alert } from "react-bootstrap";
 import { useDispatch, useSelector } from "react-redux";
 import {
   nextForm,
@@ -22,6 +22,12 @@ const FormJobCard = () => {
   const [surveyPremisesOccupiedOrVacant, setSurveypremisesOccupiedOrVacant] =
     useState(premisesOccupiedOrVacant);
   const dispatch = useDispatch();
+  const [errorMessage, setErrorMessage] = useState("");
+  const [responsibleEmployeeColor, setResponsibleEmployeeColor] = useState("");
+  const [surveyNumberColor, setSurveyNumberColor] = useState("");
+  const [presentOnSiteColor, setPresentOnSiteColor] = useState("");
+  const [premisesOccupiedOrVacantColor, setPremisesOccupiedOrVacantColor] =
+    useState("");
 
   const handleInputChange = (field, value) => {
     dispatch(updateFormData({ field, value }));
@@ -60,25 +66,40 @@ const FormJobCard = () => {
     const emptyItems = [];
     if (responsibleEmployee === "") {
       emptyItems.push("responsible Employee");
+      setResponsibleEmployeeColor("red");
     }
     if (presentOnSite.length === 0) {
       emptyItems.push("present On Site");
+      setPresentOnSiteColor("red");
     }
     if (premisesOccupiedOrVacant === "") {
       emptyItems.push("premises Occupied Or Vacant");
+      setPremisesOccupiedOrVacantColor("red");
     }
     if (surveyNumber === "") {
       emptyItems.push("survey number");
+      setSurveyNumberColor("red");
     }
+
     if (emptyItems.length !== 0) {
-      alert("Please fill out the following: " + emptyItems.join(", "));
+      const message = "Please fill out the following: " + emptyItems.join(", ");
+      setErrorMessage(message); // Set error message in state
+      setTimeout(() => {
+        setErrorMessage("");
+        setResponsibleEmployeeColor("");
+        setSurveyNumberColor("");
+        setPremisesOccupiedOrVacantColor("");
+        setPresentOnSiteColor("");
+      }, 2500);
     } else {
+      setErrorMessage("");
       dispatch(nextForm());
     }
   };
 
   return (
     <div>
+      {errorMessage && <Alert variant={"danger"}>{errorMessage}</Alert>}
       <Row>
         <Col xs={12}>
           <h1>JOB CARD / DAMAGE REPORT: </h1>
@@ -95,6 +116,7 @@ const FormJobCard = () => {
           <Form.Group as={Col} controlId="responsibleEmployee">
             <Form.Label>Responsible Employee:</Form.Label>
             <Form.Control
+              style={{ backgroundColor: responsibleEmployeeColor }}
               value={surveyResponsibleEmployee}
               onChange={(e) => {
                 handleInputChange("responsibleEmployee", e.target.value);
@@ -116,6 +138,7 @@ const FormJobCard = () => {
           <Form.Group as={Col} controlId="surveyNumber">
             <Form.Label>Survey Number:</Form.Label>
             <Form.Control
+              style={{ backgroundColor: surveyNumberColor }}
               value={surveyNumber}
               onChange={(e) => {
                 handleInputChange("surveyNumber", e.target.value);
@@ -130,7 +153,9 @@ const FormJobCard = () => {
       <hr />
       <Row className="mb-5">
         <Col xs={12}>
-          <h4>Present on Site:</h4>
+          <h4 style={{ backgroundColor: presentOnSiteColor }}>
+            Present on Site:
+          </h4>
           <Form.Group controlId="presentOnSite">
             <Form.Check
               id="mrCheckbox"
@@ -167,6 +192,7 @@ const FormJobCard = () => {
         <Col>
           <Form.Group controlId="premisesOccupiedOrVacant">
             <Form.Control
+              style={{ backgroundColor: premisesOccupiedOrVacantColor }}
               value={surveyPremisesOccupiedOrVacant}
               onChange={(e) => {
                 handleInputChange("premisesOccupiedOrVacant", e.target.value);

@@ -6,6 +6,7 @@ import {
   selectObjects,
   selectError,
   selectResponse,
+  deleteSurvey,
 } from "../features/FormSlice";
 import { useDispatch, useSelector } from "react-redux";
 
@@ -20,6 +21,12 @@ const QuotePage = () => {
     dispatch(getSurveys());
     console.log(response);
   };
+  const handleDelete = (id) => {
+    dispatch(deleteSurvey(id));
+    setTimeout(() => {
+      dispatch(getSurveys());
+    }, 150);
+  };
 
   return (
     <Container>
@@ -27,7 +34,21 @@ const QuotePage = () => {
         response.map((item) => (
           <div key={item.id}>
             <hr />
-            <h2>Survey: {item.id}</h2>
+            <Row>
+              <Col xs={6}>
+                <h2>Survey: {item.id}</h2>
+              </Col>
+              <Col xs={6} className="d-flex justify-content-end">
+                <Button
+                  onClick={() => handleDelete(item.id)}
+                  variant="danger"
+                  className="my-2"
+                >
+                  Delete
+                </Button>
+              </Col>
+            </Row>
+
             <Table striped bordered hover variant="primary">
               <tbody>
                 <tr>
@@ -104,23 +125,36 @@ const QuotePage = () => {
                 <tr>
                   <td>other:</td>
                   <td>
-                    {loading
-                      ? "Loading..."
-                      : error
-                      ? error
-                      : item.other_items.map((item_info, index) => {
-                          const info = item_info.split(".");
-                          return (
-                            <ListGroup>
+                    {loading ? (
+                      "Loading..."
+                    ) : error ? (
+                      error
+                    ) : Array.isArray(item.other_items) &&
+                      item.other_items.length > 0 ? (
+                      <ListGroup>
+                        {item.other_items.map((item_info, index) => {
+                          if (item_info.includes(".")) {
+                            const info = item_info.split(".");
+                            return (
                               <ListGroup.Item variant="dark" key={index}>
                                 {info[0]} <br />
                                 {info[1]} <br />
-                                {info[2]}
-                                <br /> {info[3]}
+                                {info[2]} <br />
+                                {info[3]}
                               </ListGroup.Item>
-                            </ListGroup>
-                          );
+                            );
+                          } else {
+                            return (
+                              <ListGroup.Item variant="dark" key={index}>
+                                {item_info}
+                              </ListGroup.Item>
+                            );
+                          }
                         })}
+                      </ListGroup>
+                    ) : (
+                      <Row>{item.other_items}</Row>
+                    )}
                   </td>
                 </tr>
                 <tr>

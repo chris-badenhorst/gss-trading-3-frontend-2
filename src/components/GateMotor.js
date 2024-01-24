@@ -133,7 +133,7 @@ const GateMotor = () => {
       alert("Please fill in at least one field");
     }
 
-    if (Array.isArray(other)) {
+    if (other.length !== 0 && Array.isArray(other) && other[0].includes(".")) {
       other.forEach((item, index) => {
         // debugging process
 
@@ -143,6 +143,8 @@ const GateMotor = () => {
       });
     } else {
       console.log('"other" is not an Array!');
+
+      dispatch(addOther(other));
     }
 
     console.log(otherItems[0]);
@@ -243,11 +245,13 @@ const GateMotor = () => {
   };
 
   const handleOther = (value) => {
-    const survey_items = value.includes(",")
-      ? value.split(",").map((item) => item.trim())
-      : [value];
+    if (value !== "") {
+      const survey_items = value.includes(",")
+        ? value.split(",").map((item) => item.trim())
+        : value;
 
-    setOther(survey_items);
+      setOther(survey_items);
+    }
   };
 
   return (

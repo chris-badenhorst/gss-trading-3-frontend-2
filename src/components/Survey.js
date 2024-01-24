@@ -16,7 +16,14 @@ import {
   selectOther,
 } from "../features/FormSlice";
 
-const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
+const SurveyItem = ({
+  id,
+  name,
+  description,
+  alarmFormData,
+  setFormData,
+  SurveyName,
+}) => {
   const [showDescription, setShowDescription] = useState(false);
 
   const handleMouseEnter = () => setShowDescription(true);
@@ -31,7 +38,7 @@ const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
 
   const popover = (
     <Popover
-      id={`Alarmpopover-${name}${id}`}
+      id={`${SurveyName}popover-${name}${id}`}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
@@ -54,47 +61,47 @@ const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`Alarmpresent-${id}${name}`}
+            id={`${SurveyName}present-${id}${name}`}
             onChange={(e) =>
-              handleChange(`Alarm--${name}--present`, e.target.checked)
+              handleChange(`${SurveyName}--${name}--present`, e.target.checked)
             }
             label="Present"
-            checked={alarmFormData[`Alarm--${name}--present`] || false} //changed this line
+            checked={alarmFormData[`${SurveyName}--${name}--present`] || false} //changed this line
           />
         </Col>
 
         <Col className="d-flex align-items-center my-1" md={2}>
           <Form.Check
-            id={`Alarmdamaged-${id}${name}`}
+            id={`${SurveyName}damaged-${id}${name}`}
             onChange={(e) =>
-              handleChange(`Alarm--${name}--damaged`, e.target.checked)
+              handleChange(`${SurveyName}--${name}--damaged`, e.target.checked)
             }
             label="Damaged"
-            checked={alarmFormData[`Alarm--${name}--damaged`] || false} //changed this line
+            checked={alarmFormData[`${SurveyName}--${name}--damaged`] || false} //changed this line
           />
         </Col>
 
         <Col className="my-1" md={2}>
           <Form.Control
-            id={`Alarmtype-${id}${name}`}
+            id={`${SurveyName}type-${id}${name}`}
             type="text"
             placeholder="Type"
             onChange={(e) =>
-              handleChange(`Alarm--${name}--type`, e.target.value)
+              handleChange(`${SurveyName}--${name}--type`, e.target.value)
             }
-            value={alarmFormData[`Alarm--${name}--type`] || ""} // added this line
+            value={alarmFormData[`${SurveyName}--${name}--type`] || ""} // added this line
           />
         </Col>
 
         <Col className="my-1" md={4}>
           <Form.Control
-            id={`Alarmfindings-${id}${name}`}
+            id={`${SurveyName}findings-${id}${name}`}
             as="textarea"
             placeholder="Findings"
             onChange={(e) =>
-              handleChange(`Alarm--${name}--findings`, e.target.value)
+              handleChange(`${SurveyName}--${name}--findings`, e.target.value)
             }
-            value={alarmFormData[`Alarm--${name}--findings`] || ""} // added this line
+            value={alarmFormData[`${SurveyName}--${name}--findings`] || ""} // added this line
           />
         </Col>
       </Row>
@@ -102,15 +109,15 @@ const AlarmItem = ({ id, name, description, alarmFormData, setFormData }) => {
   );
 };
 
-const Alarm = () => {
+const Survey = ({ SurveyName, SurveyItems }) => {
   const [alarmFormData, setFormData] = useState({});
   const [other, setOther] = useState([]);
   const [otherText, setOtherText] = useState("");
   const dispatch = useDispatch();
   const makeItem = (id, name, description) => (
-    <AlarmItem
-      key={`Alarm-${name}-${id}`}
-      id={`${id}`}
+    <SurveyItem
+      key={`${SurveyName}-${name}-${id}`}
+      id={`${SurveyName}${id}`}
       name={name}
       description={description}
       alarmFormData={alarmFormData}
@@ -153,58 +160,7 @@ const Alarm = () => {
       }
     }
   };
-  const items = [
-    {
-      id: 1,
-      name: "Power Supply",
-      fix: "Check power supply and ensure proper functioning.",
-    },
-    {
-      id: 2,
-      name: "Battery",
-      fix: "Test and replace the backup battery if needed.",
-    },
-    {
-      id: 3,
-      name: "Panel",
-      fix: "Examine the main control panel for issues and verify secure connections.",
-    },
-    {
-      id: 4,
-      name: "Keypad",
-      fix: "Test keypad functionality and check connections.",
-    },
-    {
-      id: 5,
-      name: "PIR (Indoor/Outdoor)",
-      fix: "Test PIR motion sensors and ensure proper positioning.",
-    },
-    {
-      id: 6,
-      name: "Receiver",
-      fix: "Inspect the receiver unit for signal reception and antenna integrity.",
-    },
-    {
-      id: 7,
-      name: "Expander",
-      fix: "Inspect and test additional modules connected to the system.",
-    },
-    {
-      id: 8,
-      name: "Wiring",
-      fix: "Examine system wiring for damage, loose connections, or shorts.",
-    },
-    {
-      id: 9,
-      name: "Zones/Devices",
-      fix: "Check individual zones and devices for proper configuration.",
-    },
-    {
-      id: 10,
-      name: "Communication Module",
-      fix: "Verify operational status of the communication module.",
-    },
-  ];
+  const items = SurveyItems;
 
   const handleChange = (field, value, name) => {
     setFormData({
@@ -228,24 +184,28 @@ const Alarm = () => {
       <ListGroup.Item>
         <Row>
           <Col xs={4}>
-            <h2>Alarm:</h2>
+            <h2>{`${SurveyName}`}:</h2>
           </Col>
           <Col xs={4}>
             <Form.Control
               type="text"
               placeholder="Make"
-              id={`Alarmmake`}
-              onChange={(e) => handleChange("make", e.target.value, "Alarm")}
-              value={alarmFormData["Alarm_make"] || ""} //changed this line
+              id={`${SurveyName}mmake`}
+              onChange={(e) =>
+                handleChange("make", e.target.value, `${SurveyName}`)
+              }
+              value={alarmFormData[`${SurveyName}_make`] || ""} //changed this line
             />
           </Col>
           <Col xs={4}>
             <Form.Control
               type="text"
               placeholder="Model"
-              id={`Alarmmodel`}
-              onChange={(e) => handleChange("model", e.target.value, "Alarm")}
-              value={alarmFormData["Alarm_model"] || ""} //changed this line
+              id={`${SurveyName}model`}
+              onChange={(e) =>
+                handleChange("model", e.target.value, `${SurveyName}`)
+              }
+              value={alarmFormData[`${SurveyName}_model`] || ""} //changed this line
             />
           </Col>
         </Row>
@@ -258,7 +218,7 @@ const Alarm = () => {
             <strong>Other: </strong>
           </Col>
           <p style={{ color: "gray" }}>
-            (Remember to reference the survey item—e.g., Alarm, Camera,
+            (Remember to reference the survey item—e.g., SurveyName, Camera,
             Gatemotor)
           </p>
           <Col className="d-flex align-items-center my-1" md={12}>
@@ -266,7 +226,7 @@ const Alarm = () => {
               value={otherText}
               as="textarea"
               rows={5}
-              id={`Alarm-other`}
+              id={`${SurveyName}-other`}
               onChange={(e) => {
                 handleOther(e.target.value);
                 setOtherText(e.target.value);
@@ -294,4 +254,4 @@ const Alarm = () => {
   );
 };
 
-export default Alarm;
+export default Survey;
