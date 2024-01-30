@@ -6,35 +6,36 @@ import { addSurveyItem, selectItems, addOther } from "../features/FormSlice";
 const GarageMotor = () => {
   const [garagemotorFormData, setFormData] = useState({});
   const [other, setOther] = useState([]);
+  const [otherText, setOtherText] = useState("");
   const dispatch = useDispatch();
   const surveyItems = useSelector(selectItems);
   const handleSubmit = () => {
+    console.log(otherText);
+    setOtherText("");
+
     if (Object.keys(garagemotorFormData).length !== 0) {
       dispatch(addSurveyItem(garagemotorFormData));
       setFormData({});
     } else {
-      alert("Please fill in atleast one field");
+      alert("Please fill in at least one field");
     }
+
     if (other.length !== 0 && Array.isArray(other) && other[0].includes(".")) {
       other.forEach((item, index) => {
-        const info = item.split(" ");
-        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        const info = item.split(/(?<=\.)\s*/);
+        const formattedString = `item: GarageMotor. name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        console.log(formattedString);
         dispatch(addOther(formattedString));
       });
     } else {
       if (other.includes(".")) {
-        const info = other.split(" ");
-        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        const info = other.split(/(?<=\.)\s*/);
+        const formattedString = `item: GarageMotor. name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        console.log(formattedString);
         dispatch(addOther(formattedString));
       } else {
         if (other.length !== 0) {
-          dispatch(addOther(other));
-        } else {
-          if (Array.isArray(other) && other.length !== 0) {
-            dispatch(addOther(other));
-          } else {
-            console.log('"other" is not an Array!');
-          }
+          dispatch(addOther(`item: GarageMotor. Other description: ` + other));
         }
       }
     }
@@ -113,11 +114,13 @@ const GarageMotor = () => {
 
           <Col className="d-flex align-items-center my-1" md={10}>
             <Form.Control
+              value={otherText}
               as="textarea"
               rows={5}
               id={`GarageMotor-other`}
               onChange={(e) => {
                 handleOther(e.target.value);
+                setOtherText(e.target.value);
               }}
             />
           </Col>

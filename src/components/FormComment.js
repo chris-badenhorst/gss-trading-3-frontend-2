@@ -70,7 +70,13 @@ const FormComment = () => {
         }}
         id="uniqueCommentTextarea"
       />
-      <Button onClick={handleSubmit}>submit</Button>
+      <Row>
+        <Col>
+          <Button className="mt-2 mb-5 " onClick={handleSubmit}>
+            submit
+          </Button>
+        </Col>
+      </Row>
       <Row>
         <Col>
           <Button onClick={handlePrevious}>Previos</Button>

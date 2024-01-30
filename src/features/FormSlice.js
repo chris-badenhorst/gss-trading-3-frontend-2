@@ -21,16 +21,33 @@ const initialState = {
 
 export const addSurvey = createAsyncThunk("addSurvey", async (formData) => {
   try {
-    const response = await axios.post("http://127.0.0.1:8000/", formData);
+    // Get the access token from the state
+    const accessToken = localStorage.getItem("accessToken");
+
+    // Set the headers with the access token
+    const headers = {
+      Authorization: `Bearer ${accessToken}`,
+    };
+
+    // Make the API request with the access token included in the headers
+    const response = await axios.post("http://127.0.0.1:8000/", formData, {
+      headers,
+    });
+
     return response.data; // You might want to return something from the response
   } catch (error) {
     throw error;
   }
 });
-
 export const getSurveys = createAsyncThunk("getSurveys", async () => {
   try {
-    const response = await axios.get("http://127.0.0.1:8000/get/");
+    const accessToken = localStorage.getItem("accessToken");
+
+    // Set the headers with the access token
+    const headers = {
+      Authorization: `Bearer ${JSON.parse(accessToken)}`,
+    };
+    const response = await axios.get("http://127.0.0.1:8000/get/", { headers });
     return response.data;
   } catch (error) {
     throw error;
@@ -38,8 +55,17 @@ export const getSurveys = createAsyncThunk("getSurveys", async () => {
 });
 
 export const deleteSurvey = createAsyncThunk("deleteSurveys", async (id) => {
+  const accessToken = localStorage.getItem("accessToken");
   try {
-    const response = await axios.delete(`http://127.0.0.1:8000/delete/${id}/`);
+    const accessToken = localStorage.getItem("accessToken");
+
+    // Set the headers with the access token
+    const headers = {
+      Authorization: `Bearer ${JSON.parse(accessToken)}`,
+    };
+    const response = await axios.delete(`http://127.0.0.1:8000/delete/${id}/`, {
+      headers,
+    });
   } catch (error) {
     throw error;
   }

@@ -5,10 +5,12 @@ import { nextForm, previousForm } from "../features/FormSlice";
 import FormJobCard from "../components/FormJobCard";
 import SurveyForm from "../components/SurveyForm";
 import FormComment from "../components/FormComment";
+import { selectSurvey } from "../features/UserSlice";
 
 const SurveyPage = () => {
   const currentForm = useSelector((state) => state.form.form);
   const assessmentDate = useSelector((state) => state.form.assessmentDate);
+  const survey = useSelector(selectSurvey);
 
   const dispatch = useDispatch();
 
@@ -34,11 +36,7 @@ const SurveyPage = () => {
     }
   };
 
-  return (
-    <Container>
-      {renderFormStep()}
-    </Container>
-  );
+  return <Container>{survey && renderFormStep()}</Container>;
 };
 
 export default SurveyPage;

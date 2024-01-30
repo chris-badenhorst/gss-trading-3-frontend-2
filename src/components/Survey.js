@@ -122,6 +122,7 @@ const Survey = ({ SurveyName, SurveyItems }) => {
       description={description}
       alarmFormData={alarmFormData}
       setFormData={setFormData}
+      SurveyName={SurveyName}
     />
   );
 
@@ -138,24 +139,22 @@ const Survey = ({ SurveyName, SurveyItems }) => {
 
     if (other.length !== 0 && Array.isArray(other) && other[0].includes(".")) {
       other.forEach((item, index) => {
-        const info = item.split(" ");
-        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        const info = item.split(/(?<=\.)\s*/);
+        const formattedString = `item: ${SurveyName}. name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        console.log(formattedString);
         dispatch(addOther(formattedString));
       });
     } else {
       if (other.includes(".")) {
-        const info = other.split(" ");
-        const formattedString = `name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        const info = other.split(/(?<=\.)\s*/);
+        const formattedString = `item: ${SurveyName}. name: ${info[0]} damaged: ${info[1]} type: ${info[2]} findings: ${info[3]}`;
+        console.log(formattedString);
         dispatch(addOther(formattedString));
       } else {
         if (other.length !== 0) {
-          dispatch(addOther(other));
-        } else {
-          if (Array.isArray(other) && other.length !== 0) {
-            dispatch(addOther(other));
-          } else {
-            console.log('"other" is not an Array!');
-          }
+          dispatch(
+            addOther(`item: ${SurveyName}. Other description: ` + other)
+          );
         }
       }
     }
@@ -217,10 +216,6 @@ const Survey = ({ SurveyName, SurveyItems }) => {
           <Col className="d-flex align-items-center my-1" md={12}>
             <strong>Other: </strong>
           </Col>
-          <p style={{ color: "gray" }}>
-            (Remember to reference the survey item—e.g., SurveyName, Camera,
-            Gatemotor)
-          </p>
           <Col className="d-flex align-items-center my-1" md={12}>
             <Form.Control
               value={otherText}

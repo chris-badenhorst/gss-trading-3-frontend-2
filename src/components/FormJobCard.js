@@ -9,14 +9,15 @@ import {
   selectPresentOnSite,
   selectSurveyNumber,
 } from "../features/FormSlice";
+import { selectName } from "../features/UserSlice";
 
 const FormJobCard = () => {
+  const name = useSelector(selectName);
   const survey_Number = useSelector(selectSurveyNumber);
-  const responsibleEmployee = useSelector(selectResponsibleEmployee);
   const presentOnSite = useSelector(selectPresentOnSite);
   const premisesOccupiedOrVacant = useSelector(selectPremisesOccupiedOrVacant);
   const [surveyResponsibleEmployee, setSurveyResponsibleEmployee] =
-    useState(responsibleEmployee);
+    useState(name);
   const [surveyPresentOnSite, setSurveyPresentOnSite] = useState(presentOnSite);
   const [surveyNumber, setSurveyNumber] = useState(survey_Number);
   const [surveyPremisesOccupiedOrVacant, setSurveypremisesOccupiedOrVacant] =
@@ -64,10 +65,6 @@ const FormJobCard = () => {
 
   const handleNext = () => {
     const emptyItems = [];
-    if (responsibleEmployee === "") {
-      emptyItems.push("responsible Employee");
-      setResponsibleEmployeeColor("red");
-    }
     if (presentOnSite.length === 0) {
       emptyItems.push("present On Site");
       setPresentOnSiteColor("red");
@@ -80,20 +77,28 @@ const FormJobCard = () => {
       emptyItems.push("survey number");
       setSurveyNumberColor("red");
     }
-
-    if (emptyItems.length !== 0) {
-      const message = "Please fill out the following: " + emptyItems.join(", ");
-      setErrorMessage(message); // Set error message in state
+    if (surveyNumber[8]) {
+      setErrorMessage("Invalid survey is more than 8 numbers");
+      setSurveyNumberColor("red");
       setTimeout(() => {
-        setErrorMessage("");
-        setResponsibleEmployeeColor("");
         setSurveyNumberColor("");
-        setPremisesOccupiedOrVacantColor("");
-        setPresentOnSiteColor("");
       }, 2500);
     } else {
-      setErrorMessage("");
-      dispatch(nextForm());
+      if (emptyItems.length !== 0) {
+        const message =
+          "Please fill out the following: " + emptyItems.join(", ");
+        setErrorMessage(message); // Set error message in state
+        setTimeout(() => {
+          setErrorMessage("");
+          setResponsibleEmployeeColor("");
+          setSurveyNumberColor("");
+          setPremisesOccupiedOrVacantColor("");
+          setPresentOnSiteColor("");
+        }, 2500);
+      } else {
+        setErrorMessage("");
+        dispatch(nextForm());
+      }
     }
   };
 
@@ -116,22 +121,11 @@ const FormJobCard = () => {
           <Form.Group as={Col} controlId="responsibleEmployee">
             <Form.Label>Responsible Employee:</Form.Label>
             <Form.Control
+              type="text"
               style={{ backgroundColor: responsibleEmployeeColor }}
               value={surveyResponsibleEmployee}
-              onChange={(e) => {
-                handleInputChange("responsibleEmployee", e.target.value);
-                setSurveyResponsibleEmployee(e.target.value);
-              }}
-              as="select"
-            >
-              <option value="" disabled>
-                Select
-              </option>
-              <option value="Jaco">Jaco</option>
-              <option value="Louise">Louise</option>
-              <option value="Noel">Noel</option>
-              <option value="Amos">Amos</option>
-            </Form.Control>
+              disabled={true}
+            />
           </Form.Group>
         </Col>
         <Col md={4}>
